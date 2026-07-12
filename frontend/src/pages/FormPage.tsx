@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 
 // ---------- Types ----------
 type SingleSelectField =
@@ -218,6 +220,7 @@ const RatingSlider: React.FC<{
 
 // ---------- Main component ----------
 const FormPage: React.FC = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<FormState>({
     name: "",
     email: "",
@@ -278,8 +281,9 @@ const FormPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Travel Profile:", formData);
-    // Save the data or handle it as needed
+    localStorage.setItem("travelProfile", JSON.stringify(formData));
+    console.log("Travel Profile saved:", formData);
+    navigate("/"); 
   };
 
   return (

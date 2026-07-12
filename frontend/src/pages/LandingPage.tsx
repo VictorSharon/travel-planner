@@ -51,10 +51,10 @@ const LandingPage: React.FC = () => {
             className="flex-1 border border-slate-300 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
           />
           <button
-            type="submit"
-            className="bg-indigo-600 text-white font-medium px-5 py-3 rounded-md shadow-md shadow-indigo-600/30 hover:bg-indigo-500 hover:shadow-lg transition-all duration-150"
+            onClick={() => navigate("/chat", { state: { destination: search } })}
+            className="bg-indigo-800 text-white font-medium px-5 py-3 rounded-md shadow-md shadow-indigo-600/30 hover:bg-indigo-800 hover:shadow-lg transition-all duration-150"
           >
-            Search
+            Build Itinerary
           </button>
         </div>
       </form>

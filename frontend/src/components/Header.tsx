@@ -36,7 +36,7 @@ const Header: React.FC = () => {
 
         <button
           onClick={() => navigate("/plan-trip")}
-          className="bg-indigo-600 text-white text-sm font-semibold px-5 py-2.5 rounded-md shadow-md shadow-indigo-600/30 hover:bg-indigo-500 hover:shadow-lg transition-all duration-150"
+          className="bg-indigo-800 text-white text-sm font-semibold px-5 py-2.5 rounded-md shadow-md shadow-indigo-600/30 hover:bg-indigo-800 hover:shadow-lg transition-all duration-150"
         >
           Travel Profile
         </button>
