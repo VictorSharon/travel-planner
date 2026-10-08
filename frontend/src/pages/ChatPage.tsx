@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import axios from "axios";
+import { useApi } from "../lib/api";
 
 interface Message {
   id: string;
@@ -16,6 +16,7 @@ const paceOptions = ["Adventurous", "Laid back", "A mix of both"];
 const ChatPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const api = useApi();
   const destination = (location.state as { destination?: string })?.destination || "your trip";
 
   const [modalStep, setModalStep] = useState<ModalStep>("choice");
@@ -37,7 +38,7 @@ const ChatPage: React.FC = () => {
   const pushBotResponse = async (userText: string, contextOverride?: string) => {
     setIsTyping(true);
     try {
-      const res = await axios.post("http://localhost:8000/api/chat", {
+      const res = await api.post("/api/chat", {
         message: userText,
         destination,
         context: contextOverride,

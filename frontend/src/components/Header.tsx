@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { Show, UserButton } from "@clerk/react";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -40,6 +41,18 @@ const Header: React.FC = () => {
         >
           Travel Profile
         </button>
+
+        <Show when="signed-in">
+          <UserButton />
+        </Show>
+        <Show when="signed-out">
+          <button
+            onClick={() => navigate("/sign-in")}
+            className="text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors"
+          >
+            Sign in
+          </button>
+        </Show>
       </div>
     </header>
   );

@@ -1,10 +1,12 @@
 import os
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from google import genai
+from app.auth.clerk import get_current_user_id
 from app.schemas.trip import TripRequest, TripResponse
 from app.schemas.chat import ChatRequest, ChatResponse
 
-router = APIRouter()
+# Every /api route requires a signed-in Clerk user
+router = APIRouter(dependencies=[Depends(get_current_user_id)])
 
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
