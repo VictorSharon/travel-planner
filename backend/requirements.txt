@@ -3,3 +3,5 @@ uvicorn
 pydantic
 google-genai
 pyjwt[crypto]
+sqlalchemy
+psycopg2-binary

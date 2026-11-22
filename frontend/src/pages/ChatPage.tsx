@@ -62,10 +62,24 @@ const ChatPage: React.FC = () => {
     }
   };
 
-  const handleUseProfile = () => {
-    const saved = localStorage.getItem("travelProfile");
+  const handleUseProfile = async () => {
+    let profile;
+    try {
+      profile = (await api.get("/api/travel-profile")).data;
+    } catch (err) {
+      console.error("Failed to load travel profile:", err);
+      setMessages([
+        {
+          id: crypto.randomUUID(),
+          sender: "bot",
+          text: `Sorry, I couldn't load your Travel Profile. Please try again, or choose "Customize This Trip" instead.`,
+        },
+      ]);
+      setModalStep(null);
+      return;
+    }
 
-    if (!saved) {
+    if (!profile) {
       setMessages([
         {
           id: crypto.randomUUID(),
@@ -77,7 +91,6 @@ const ChatPage: React.FC = () => {
       return;
     }
 
-    const profile = JSON.parse(saved);
     const summary = `Plan a trip to ${destination} using my travel profile — Name: ${profile.name || "N/A"}, Trips/year: ${profile.tripsPerYear || "N/A"}, Ideal trip length: ${profile.tripLength || "N/A"}, Travels with: ${profile.travelWith || "N/A"}, Pace: ${profile.pace || "N/A"}, Budget: ${profile.budget || "N/A"}, Accommodation: ${profile.accommodation || "N/A"}, Vacation goals: ${(profile.vacationGoals || []).join(", ") || "N/A"}.`;
 
     setMessages([

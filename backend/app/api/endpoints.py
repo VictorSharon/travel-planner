@@ -1,9 +1,16 @@
 import os
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from google import genai
+from sqlalchemy import func
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm import Session
 from app.auth.clerk import get_current_user_id
+from app.database.db import get_db
+from app.models.travel_profile import TravelProfile
 from app.schemas.trip import TripRequest, TripResponse
 from app.schemas.chat import ChatRequest, ChatResponse
+from app.schemas.profile import TravelProfileData
 
 # Every /api route requires a signed-in Clerk user
 router = APIRouter(dependencies=[Depends(get_current_user_id)])
@@ -37,3 +44,27 @@ def chat(request: ChatRequest):
         return ChatResponse(reply=response.text)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/travel-profile", response_model=Optional[TravelProfileData])
+def get_travel_profile(user_id: str = Depends(get_current_user_id), db: Session = Depends(get_db)):
+    """Returns the signed-in user's travel profile, or null if they haven't saved one yet."""
+    profile = db.get(TravelProfile, user_id)
+    return TravelProfileData.model_validate(profile.data) if profile else None
+
+
+@router.put("/travel-profile", response_model=TravelProfileData)
+def save_travel_profile(
+    data: TravelProfileData,
+    user_id: str = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    """Creates or replaces the signed-in user's travel profile."""
+    values = data.model_dump()
+    stmt = insert(TravelProfile).values(user_id=user_id, data=values)
+    stmt = stmt.on_conflict_do_update(
+        index_elements=[TravelProfile.user_id],
+        set_={"data": values, "updated_at": func.now()},
+    )
+    db.execute(stmt)
+    db.commit()
+    return data

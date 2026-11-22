@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { useApi } from "../lib/api";
 
 // ---------- Types ----------
 type SingleSelectField =
@@ -121,6 +121,42 @@ const defaultClimate = climateLabels.reduce((acc, { key }) => {
   return acc;
 }, {} as Record<ClimateKey, number>);
 
+const defaultFormState: FormState = {
+  name: "",
+  email: "",
+  tripsPerYear: "",
+  tripLength: "",
+  travelWith: "",
+  pace: "",
+  spontaneity: "",
+  budget: "",
+  accommodation: "",
+  spendingPriority: "",
+  interests: defaultInterests,
+  foodAdventurous: 3,
+  dietaryRestrictions: "",
+  favoriteCuisines: "",
+  streetVsFineDining: 3,
+  coffeeCulture: 3,
+  wineBreweries: 3,
+  climate: defaultClimate,
+  longestFlight: "",
+  transportation: "",
+  bucketList: [],
+  bucketListOther: "",
+  vacationGoals: [],
+  dislikes: [],
+  dislikesOther: "",
+};
+
+// Fill in defaults for anything missing from a saved profile (e.g. questions added later)
+const withDefaults = (saved: Partial<FormState>): FormState => ({
+  ...defaultFormState,
+  ...saved,
+  interests: { ...defaultInterests, ...saved.interests },
+  climate: { ...defaultClimate, ...saved.climate },
+});
+
 // ---------- Reusable pieces ----------
 const SectionCard: React.FC<{ emoji: string; title: string; subtitle?: string; children: React.ReactNode }> = ({
   emoji, title, subtitle, children,
@@ -221,33 +257,30 @@ const RatingSlider: React.FC<{
 // ---------- Main component ----------
 const FormPage: React.FC = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<FormState>({
-    name: "",
-    email: "",
-    tripsPerYear: "",
-    tripLength: "",
-    travelWith: "",
-    pace: "",
-    spontaneity: "",
-    budget: "",
-    accommodation: "",
-    spendingPriority: "",
-    interests: defaultInterests,
-    foodAdventurous: 3,
-    dietaryRestrictions: "",
-    favoriteCuisines: "",
-    streetVsFineDining: 3,
-    coffeeCulture: 3,
-    wineBreweries: 3,
-    climate: defaultClimate,
-    longestFlight: "",
-    transportation: "",
-    bucketList: [],
-    bucketListOther: "",
-    vacationGoals: [],
-    dislikes: [],
-    dislikesOther: "",
-  });
+  const api = useApi();
+  const [formData, setFormData] = useState<FormState>(defaultFormState);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">("loading");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Load the user's saved answers
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get<Partial<FormState> | null>("/api/travel-profile")
+      .then((res) => {
+        if (cancelled) return;
+        if (res.data) setFormData(withDefaults(res.data));
+        setLoadState("ready");
+      })
+      .catch((err) => {
+        console.error("Failed to load travel profile:", err);
+        if (!cancelled) setLoadState("error");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [api]);
 
   const setField = <K extends keyof FormState>(field: K, value: FormState[K]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -279,12 +312,40 @@ const FormPage: React.FC = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem("travelProfile", JSON.stringify(formData));
-    console.log("Travel Profile saved:", formData);
-    navigate("/"); 
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await api.put("/api/travel-profile", formData);
+      navigate("/");
+    } catch (err) {
+      console.error("Failed to save travel profile:", err);
+      setSaveError("Couldn't save your profile. Please try again.");
+      setSaving(false);
+    }
   };
+
+  // Don't show the form until saved answers have loaded, so an empty form can't overwrite them
+  if (loadState !== "ready") {
+    return (
+      <div className="flex justify-center px-4 py-24 text-center text-slate-600">
+        {loadState === "loading" ? (
+          <p>Loading your travel profile…</p>
+        ) : (
+          <div>
+            <p className="mb-4">We couldn't load your travel profile.</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-yellow-700 text-white font-semibold px-5 py-2.5 rounded-md hover:bg-orange-400 transition-all duration-150"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex justify-center px-4 py-12">
@@ -482,11 +543,14 @@ const FormPage: React.FC = () => {
           </div>
         </SectionCard>
 
+        {saveError && <p className="text-sm text-red-600 text-center">{saveError}</p>}
+
         <button
           type="submit"
-          className="w-full bg-yellow-700 text-white font-semibold px-6 py-3.5 rounded-md shadow-md shadow-yellow-700/40 hover:bg-orange-400 hover:shadow-lg hover:shadow-yellow-700/50 transition-all duration-150 text-base"
+          disabled={saving}
+          className="w-full bg-yellow-700 text-white font-semibold px-6 py-3.5 rounded-md shadow-md shadow-yellow-700/40 hover:bg-orange-400 hover:shadow-lg hover:shadow-yellow-700/50 transition-all duration-150 text-base disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          Save My Travel Profile
+          {saving ? "Saving…" : "Save My Travel Profile"}
         </button>
       </form>
     </div>
