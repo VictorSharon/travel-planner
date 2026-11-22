@@ -5,7 +5,9 @@ import Header from "./components/Header";
 import ChatWidget from "./components/ChatWidget";
 import FormPage from "./pages/FormPage";
 import LandingPage from "./pages/LandingPage";
-import ChatPage from "./pages/ChatPage";
+import NewTripPage from "./pages/NewTripPage";
+import TripBoardPage from "./pages/TripBoardPage";
+import TripsPage from "./pages/TripsPage";
 import { SignInPage, SignUpPage } from "./pages/AuthPages";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -60,7 +62,9 @@ const App: React.FC = () => {
               <Route path="/sign-in/*" element={<SignInPage />} />
               <Route path="/sign-up/*" element={<SignUpPage />} />
               <Route path="/plan-trip" element={<RequireAuth><FormPage /></RequireAuth>} />
-              <Route path="/chat" element={<RequireAuth><ChatPage /></RequireAuth>} />
+              <Route path="/trips" element={<RequireAuth><TripsPage /></RequireAuth>} />
+              <Route path="/trips/new" element={<RequireAuth><NewTripPage /></RequireAuth>} />
+              <Route path="/trips/:tripId" element={<RequireAuth><TripBoardPage /></RequireAuth>} />
             </Routes>
           </div>
 

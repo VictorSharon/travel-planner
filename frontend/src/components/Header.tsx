@@ -33,6 +33,11 @@ const Header: React.FC = () => {
           <button onClick={() => scrollToSection("recommendations")} className="hover:text-slate-900 transition-colors">
             Recommendations
           </button>
+          <Show when="signed-in">
+            <button onClick={() => navigate("/trips")} className="hover:text-slate-900 transition-colors">
+              My Trips
+            </button>
+          </Show>
         </nav>
 
         <button

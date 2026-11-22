@@ -26,6 +26,7 @@ type ClimateKey = "warm" | "cold" | "snow" | "tropical" | "rain" | "dry";
 interface FormState {
   name: string;
   email: string;
+  homeLocation: string;
   tripsPerYear: string;
   tripLength: string;
   travelWith: string;
@@ -124,6 +125,7 @@ const defaultClimate = climateLabels.reduce((acc, { key }) => {
 const defaultFormState: FormState = {
   name: "",
   email: "",
+  homeLocation: "",
   tripsPerYear: "",
   tripLength: "",
   travelWith: "",
@@ -381,6 +383,20 @@ const FormPage: React.FC = () => {
             <p className="text-xs text-slate-400 mt-1">
               We'll only use this for recommendations and occasional promotions.
             </p>
+          </div>
+        </SectionCard>
+
+        <SectionCard emoji="🏠" title="Home Location" subtitle="Where your trips start. We'll plan flights and transport from here.">
+          <div>
+            <FieldLabel>City</FieldLabel>
+            <input
+              type="text"
+              value={formData.homeLocation}
+              onChange={(e) => setField("homeLocation", e.target.value)}
+              maxLength={200}
+              className="w-full border border-slate-300 p-2.5 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-700 focus:border-yellow-700 transition-all"
+              placeholder="e.g. Chicago, IL"
+            />
           </div>
         </SectionCard>
 

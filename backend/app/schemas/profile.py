@@ -12,6 +12,7 @@ class TravelProfileData(BaseModel):
 
     name: str = ""
     email: str = ""
+    home_location: str = Field(default="", max_length=200)  # departure point for flights
     trips_per_year: str = ""
     trip_length: str = ""
     travel_with: str = ""
